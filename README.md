@@ -7,7 +7,7 @@ I'll add log file backups a bit later(it's already in-built in the game, but it 
 That's it.
 
 # How to use?
-Download one of the [release builds](https://github.com/bonenaut7/vs-relauncher/releases) or make a build yourself (but there's no fat-jar plugins in buildscript ha-ha-ha *\*evil-laughter\**)
+Download one of the [release builds](https://github.com/bonenaut7/vs-relauncher/releases) or make a build yourself
 Oh yeah, also install yourself a [Java](https://openjdk.org/).
 
 # What's about run arguments?
