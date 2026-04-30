@@ -16,6 +16,7 @@
 package by.bonenaut7.vsrelauncher;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,9 +28,10 @@ import com.formdev.flatlaf.util.SystemFileChooser;
 import com.formdev.flatlaf.util.SystemFileChooser.FileNameExtensionFilter;
 
 import by.bonenaut7.vsrelauncher.config.AppConfig;
+import by.bonenaut7.vsrelauncher.util.Platform;
+import by.bonenaut7.vsrelauncher.util.Utils;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-
 
 public final class Relauncher {
 	
@@ -128,12 +130,17 @@ public final class Relauncher {
 		return fileChooserCode;
 	}
 	
-	// FIXME Set current directories to most possible ones
 	private static SystemFileChooser createRelauncherFileChooser() {
 		final SystemFileChooser chooser = new SystemFileChooser();
 		chooser.setDialogTitle("Choose relauncher file (The one you've opened right now. Yes, I know it's kinda stupid...)");
 		chooser.setFileFilter(new FileNameExtensionFilter("Relauncher.jar", "jar", "exe"));
 		chooser.setFileSelectionMode(SystemFileChooser.FILES_ONLY);
+		Utils.sneakyThrows(() -> {
+			chooser.setCurrentDirectory(Path.of(Relauncher.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent().toFile());
+		}, e -> {
+			chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+		});
+		
 		return chooser;
 	}
 	
@@ -142,6 +149,7 @@ public final class Relauncher {
 		chooser.setDialogTitle("Choose game executable file");
 		chooser.setFileFilter(new FileNameExtensionFilter("Vintagestory.exe", "exe"));
 		chooser.setFileSelectionMode(SystemFileChooser.FILES_ONLY);
+		
 		return chooser;
 	}
 	
@@ -149,6 +157,13 @@ public final class Relauncher {
 		final SystemFileChooser chooser = new SystemFileChooser();
 		chooser.setDialogTitle("Choose game data folder (%APPDATA%/VintagestoryData)");
 		chooser.setFileSelectionMode(SystemFileChooser.DIRECTORIES_ONLY);
+		chooser.setCurrentDirectory(new File(switch (Platform.get()) {
+			case WINDOWS -> System.getenv("AppData") + "/VintagestoryData/";
+			case FREEBSD, LINUX -> System.getProperty("user.home");
+			case MACOSX -> System.getProperty("user.home") + "/Library/Application Support/";
+			default -> "/";
+		}));
+		
 		return chooser;
 	}
 	
