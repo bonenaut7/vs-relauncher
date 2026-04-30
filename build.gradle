@@ -1,0 +1,52 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+			url = "https://plugins.gradle.org/m2/";
+		}
+    }
+}
+
+apply plugin: 'application'
+apply plugin: 'eclipse'
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+repositories {
+    mavenCentral()
+}
+
+archivesBaseName = 'VintageStory-Relauncher'
+
+dependencies {
+	implementation 'org.apache.commons:commons-lang3:3.19.0'
+	implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'org.yaml:snakeyaml:2.5'
+	implementation 'by.bonenaut7.configfacade:core:0.1.1'
+    implementation 'by.bonenaut7.configfacade:snakeyaml-adapter:1.0.0'
+    implementation 'by.bonenaut7:uebus:1.0.0'
+	implementation 'com.formdev:flatlaf:3.7.1'
+	implementation 'net.sf.jopt-simple:jopt-simple:6.0-alpha-3'
+	implementation 'de.mobanisto:toast4j:0.2.0'
+}
+
+eclipse {
+	classpath {
+		downloadSources = true
+	}
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'by.bonenaut7.vsrelauncher.Relauncher'
+    }
+}
+
+// Copy dependencies to the deps folder
+task copyLibrariesToOutputFolder(type: Copy) {
+    from configurations.compileClasspath
+	from configurations.runtimeClasspath
+    into "build/dependencies/"
+}
+tasks.build.dependsOn.add(copyLibrariesToOutputFolder)
