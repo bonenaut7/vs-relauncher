@@ -64,6 +64,9 @@ public final class AppConfig extends AbstractConfigWrapped {
 	public boolean experimental_stormNotifications;
 	public boolean experimental_deathNotifications;
 	
+	public long stats_queueTime = 0;
+	public long stats_playTime = 0;
+	
 	public AppConfig() {
 		this(new File("relauncher.yml"));
 	}
@@ -145,6 +148,12 @@ public final class AppConfig extends AbstractConfigWrapped {
 			experimental_deathNotifications = experimentalTag.getBoolean("deathNotifications", experimental_deathNotifications);
 		}
 		
+		if (compound.has("statistics")) {
+			final ConfigCompound statsTag = compound.getCompound("statistics");
+			stats_queueTime = statsTag.getLong("queueTime", stats_queueTime);
+			stats_playTime = statsTag.getLong("playTime", stats_playTime);
+		}
+		
 		// Post-load
 		gamePath = gameExecutableFile != null ? Path.of(gameExecutableFile).getParent().toFile().getAbsolutePath() : null;
 	}
@@ -186,6 +195,11 @@ public final class AppConfig extends AbstractConfigWrapped {
 		experimentalTag.append("stormNotifications", experimental_stormNotifications, "Notifies about temporal storms");
 		experimentalTag.append("deathNotifications", experimental_deathNotifications, "Notifies about your deaths");
 		compound.append("experimental", experimentalTag, "Experimental functions configuration");
+		
+		final ConfigCompound statsTag = new ConfigCompound();
+		experimentalTag.append("queueTime", stats_queueTime, "Your queue wait time in seconds");
+		experimentalTag.append("playTime", stats_playTime, "Your playtime in seconds");
+		compound.append("statistics", statsTag, "VS Relauncher statistics");
 		
 		return compound;
 	}
