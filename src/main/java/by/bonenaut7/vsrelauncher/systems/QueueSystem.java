@@ -56,7 +56,8 @@ public final class QueueSystem extends AbstractSystem {
 	private volatile int queuePosition = 0;
 	
 	// Shitton of instants cause they're read from logs and I'm pretty lazy
-	private volatile Instant queueJoinInstant = null;
+	private volatile Instant queueJoinInfoTs = null;
+	private volatile Instant queueJoinStatsTs = null;
 	private volatile Instant playingTimeSinceJoin = null;
 	private volatile Instant lastQueuePositionUpdate = null;
 	private volatile Instant lastQueueMessage = null;
@@ -77,7 +78,8 @@ public final class QueueSystem extends AbstractSystem {
 		mainLogBulkSub = bus.register(EventMainLogMessagesBulk.class, this::onLogBulkEvent);
 		
 		gameState = GAME_STATE_IN_MENU;
-		queueJoinInstant = null;
+		queueJoinInfoTs = null;
+		queueJoinStatsTs = null;
 		playingTimeSinceJoin = null;
 		
 		task.start();
@@ -88,6 +90,11 @@ public final class QueueSystem extends AbstractSystem {
 		bus.unregister(mainLogBulkSub);
 		
 		task.stop();
+		
+		// Finalize statistics counters
+		final Instant instant = Instant.now();
+		addStatisticQueueTime(queueJoinStatsTs, instant);
+		addStatisticPlayTime(playingTimeSinceJoin, instant);
 	}
 	
 	public void onConfigUpdate(AppConfig config) {
@@ -107,13 +114,17 @@ public final class QueueSystem extends AbstractSystem {
 	}
 	
 	public Instant getQueueJoinInstant() {
-		return queueJoinInstant;
+		return queueJoinInfoTs;
+	}
+	
+	public boolean isQueueStuck() {
+		return hasPassed(lastQueueMessage, 10, ChronoUnit.MINUTES);
 	}
 	
 	private void onTick() {
 		if (hasPassed(lastQueuePositionUpdate, 30, ChronoUnit.MINUTES)) {
 			ctx.notifications.show(NotificationType.PLAIN, 10000, "Queue is probably dead. Staying in the same place for more than 30 minutes...");
-		} else if (hasPassed(lastQueueMessage, 10, ChronoUnit.MINUTES)) {
+		} else if (isQueueStuck()) {
 			ctx.notifications.show(NotificationType.PLAIN, 10000, "Queue may be dead. Client didn't received any queue updates for more than 10 minutes.");
 		}
 		
@@ -127,7 +138,8 @@ public final class QueueSystem extends AbstractSystem {
 			final Instant instant = Instant.now();
 			
 			if (gameState != GAME_STATE_IN_QUEUE) {
-				queueJoinInstant = instant;
+				queueJoinInfoTs = instant;
+				queueJoinStatsTs = instant;
 				setQueueState(GAME_STATE_IN_QUEUE);
 			}
 			
@@ -185,7 +197,7 @@ public final class QueueSystem extends AbstractSystem {
 				
 				if (gameState != GAME_STATE_IN_QUEUE) {
 					instant = parseInstant(line, parsePosition);
-					queueJoinInstant = instant;
+					queueJoinInfoTs = instant;
 					gameState = GAME_STATE_IN_QUEUE;
 				}
 				
@@ -206,13 +218,21 @@ public final class QueueSystem extends AbstractSystem {
 				lastQueueMessage = instant;
 				queuePosition = position;
 			} else if (line.contains("Processed server identification")) {
-				queueJoinInstant = null;
+				queueJoinInfoTs = null;
 				gameState = GAME_STATE_IN_GAME;
 			} else if (line.contains("Destroying game session")) {
-				queueJoinInstant = null;
+				queueJoinInfoTs = null;
 				gameState = GAME_STATE_IN_MENU;
 			}
 		}
+		
+		// Reset queue join timestamp to not fuck-up the statistics (it's intentionally less in some specific cases)
+		if (gameState == GAME_STATE_IN_QUEUE) {
+			queueJoinStatsTs = Instant.now();
+		}
+		
+		// Reset message counter to now show "QUEUE STUCK!??!?!" message on startup
+		lastQueueMessage = Instant.now();
 		
 		updateQueueSpeed(Instant.now(), false, false);
 		markScreenDirty();
@@ -223,7 +243,16 @@ public final class QueueSystem extends AbstractSystem {
 			if (state == GAME_STATE_IN_GAME) {
 				playingTimeSinceJoin = Instant.now();
 			} else {
+				addStatisticPlayTime(playingTimeSinceJoin, Instant.now());
 				playingTimeSinceJoin = null;
+			}
+			
+			if (state == GAME_STATE_IN_QUEUE) {
+				queueJoinInfoTs = queueJoinStatsTs = Instant.now();
+			} else {
+				addStatisticQueueTime(queueJoinStatsTs, Instant.now());
+				queueJoinInfoTs = null;
+				queueJoinStatsTs = null;
 			}
 		}
 		
@@ -234,6 +263,7 @@ public final class QueueSystem extends AbstractSystem {
 	private void setQueuePosition(int position) {
 		if (gameState == GAME_STATE_IN_QUEUE) {
 			// check for notifications
+			// FIXME find out what it's needed for, I forgot :skull_emoji:
 		} else { // 
 			position = 0;
 		}
@@ -287,7 +317,7 @@ public final class QueueSystem extends AbstractSystem {
 	}
 	
 	private boolean hasPassed(Instant instant, long value, TemporalUnit unit) {
-		return instant != null && instant.until(Instant.now(), unit) < value;
+		return instant != null && instant.until(Instant.now(), unit) >= value;
 	}
 	
 	private void markScreenDirty() {
@@ -302,5 +332,23 @@ public final class QueueSystem extends AbstractSystem {
 		parsePosition.setIndex(0);
 		parsePosition.setErrorIndex(-1);
 		return instant;
+	}
+	
+	private void addStatisticPlayTime(Instant from, Instant to) {
+		if (from == null || to == null) {
+			return;
+		}
+		
+		ctx.config.stats_playTime += durationBetween(from, to, ChronoUnit.SECONDS);
+		ctx.config.save();
+	}
+	
+	private void addStatisticQueueTime(Instant from, Instant to) {
+		if (from == null || to == null) {
+			return;
+		}
+		
+		ctx.config.stats_queueTime += durationBetween(from, to, ChronoUnit.SECONDS);
+		ctx.config.save();
 	}
 }
