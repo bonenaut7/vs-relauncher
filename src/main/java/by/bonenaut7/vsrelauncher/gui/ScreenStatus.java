@@ -41,6 +41,8 @@ public final class ScreenStatus extends ScreenTabs {
 	private JLabel queueSpeedText;
 	private JLabel queueETAText;
 	private JLabel queueWaitText;
+	private JLabel statsPlayTimeText;
+	private JLabel statsQueueTimeText;
 	private JPanel settingsPanel;
 	private ButtonsRow tabFolderButtons;
 	private JButton buttonGameFolder;
@@ -80,6 +82,18 @@ public final class ScreenStatus extends ScreenTabs {
 		settingsPanel = new JPanel();
 		settingsPanel.setBorder(BorderFactory.createTitledBorder("Statistics"));
 		settingsPanel.setBounds(5, TAB_OFFSET + 110, width - 10, height - TAB_OFFSET - 110 - 30);
+		settingsPanel.setLayout(null);
+		
+		yOffset = 4;
+		statsPlayTimeText = new JLabel("Play time");
+		statsPlayTimeText.setBounds(10, yOffset += yOffsetStep, width - 20, 20);
+		statsPlayTimeText.setToolTipText("Amount of time you've played in total.");
+		settingsPanel.add(statsPlayTimeText);
+		
+		statsQueueTimeText = new JLabel("Queue wait time");
+		statsQueueTimeText.setBounds(10, yOffset += yOffsetStep, width - 20, 20);
+		statsQueueTimeText.setToolTipText("Amount of time you've waited in queue in total.");
+		settingsPanel.add(statsQueueTimeText);
 		
 		tabFolderButtons = new ButtonsRow();
 		buttonGameFolder = tabFolderButtons.add("Open game folder", KEY_GAMEDIR, this);
@@ -95,21 +109,19 @@ public final class ScreenStatus extends ScreenTabs {
 		final var ctx = Application.context();
 		final var system = ctx.getSystem(QueueSystem.class);
 		
-		this.queuePositionText.setText(switch (system.getGameState()) {
-			case QueueSystem.GAME_STATE_IN_QUEUE -> String.format("Your queue position is: %d", system.getQueuePosition());
-			case QueueSystem.GAME_STATE_IN_GAME -> "You're in the game.";
-			default -> "You are not in the queue.";
-		});
-		
 		if (system.getGameState() == QueueSystem.GAME_STATE_IN_QUEUE) {
-			float queueSpeed = system.getQueueSpeed();
+			final int queuePosition = system.getQueuePosition();
+			final float queueSpeed = system.getQueueSpeed();
 			
+			this.queuePositionText.setText(String.format("Your queue position is: %d", queuePosition));
+			
+			final String stuckMessage = system.isQueueStuck() ? " (Queue stuck?)" : "";
 			if (queueSpeed < 0F) {
-				this.queueSpeedText.setText("Speed: Estimating... (less than 0.05/min)");
-				this.queueETAText.setText(String.format("ETA: Estimating... (more than %s)", Utils.formatTimeMinutes((int)(system.getQueuePosition() / 0.05f))));
+				this.queueSpeedText.setText("Speed: Estimating... (less than 0.05/min)" + stuckMessage);
+				this.queueETAText.setText(String.format("ETA: Estimating... (more than %s)%s", Utils.formatTimeMinutes((int)(queuePosition / 0.05f)), stuckMessage));
 			} else {
-				this.queueSpeedText.setText(String.format("Speed: %s", String.format("%.2f/min", queueSpeed)));
-				this.queueETAText.setText(String.format("ETA: %s", Utils.formatTimeMinutes((int)(system.getQueuePosition() / queueSpeed))));
+				this.queueSpeedText.setText(String.format("Speed: %s%s", String.format("%.2f/min", queueSpeed), stuckMessage));
+				this.queueETAText.setText(String.format("ETA: %s%s", Utils.formatTimeMinutes((int)(queuePosition / queueSpeed)), stuckMessage));
 			}
 			
 			this.queueWaitText.setText(String.format("Waiting for: %s", Utils.formatTimeMinutes(system.getQueueJoinInstant().until(Instant.now(), ChronoUnit.MINUTES))));
@@ -118,10 +130,18 @@ public final class ScreenStatus extends ScreenTabs {
 			queueETAText.setVisible(true);
 			queueWaitText.setVisible(true);
 		} else {
+			this.queuePositionText.setText(switch (system.getGameState()) {
+				case QueueSystem.GAME_STATE_IN_GAME -> "You're in the game.";
+				default -> "You are not in the queue.";
+			});
+			
 			queueSpeedText.setVisible(false);
 			queueETAText.setVisible(false);
 			queueWaitText.setVisible(false);
 		}
+		
+		statsPlayTimeText.setText(String.format("Total play time: %s", Utils.formatTime(ctx.config.stats_playTime)));
+		statsQueueTimeText.setText(String.format("Total queue wait: %s", Utils.formatTime(ctx.config.stats_queueTime)));
 		
 		buttonGameFolder.setEnabled(ctx.config.gamePath != null);
 		buttonDataFolder.setEnabled(ctx.config.gameDataPath != null);
