@@ -197,8 +197,8 @@ public final class AppConfig extends AbstractConfigWrapped {
 		compound.append("experimental", experimentalTag, "Experimental functions configuration");
 		
 		final ConfigCompound statsTag = new ConfigCompound();
-		experimentalTag.append("queueTime", stats_queueTime, "Your queue wait time in seconds");
-		experimentalTag.append("playTime", stats_playTime, "Your playtime in seconds");
+		statsTag.append("queueTime", stats_queueTime, "Your queue wait time in seconds");
+		statsTag.append("playTime", stats_playTime, "Your playtime in seconds");
 		compound.append("statistics", statsTag, "VS Relauncher statistics");
 		
 		return compound;
