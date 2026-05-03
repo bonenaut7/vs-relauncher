@@ -18,10 +18,15 @@ package by.bonenaut7.vsrelauncher.gui;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.JFrame;
 
-public final class Window implements ClipboardOwner {
+import by.bonenaut7.vsrelauncher.Application;
+import by.bonenaut7.vsrelauncher.events.EventAppShutdown;
+
+public final class Window implements WindowListener, ClipboardOwner {
 	private static final int WINDOW_WIDTH = 350;
 	private static final int WINDOW_HEIGHT = 350;
 	
@@ -32,8 +37,8 @@ public final class Window implements ClipboardOwner {
 	
 	public Window() {
 		frame = new JFrame();
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-//		frame.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
+		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		frame.addWindowListener(this);
 		frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 		frame.setResizable(false);
 		frame.setTitle("VS Relauncher");
@@ -101,7 +106,46 @@ public final class Window implements ClipboardOwner {
 		frame.repaint();
 	}
 	
+	public void destroy() {
+		frame.dispose();
+	}
+	
 	@Override
 	public void lostOwnership(Clipboard clipboard, Transferable contents) {
+	}
+
+	@Override
+	public void windowOpened(WindowEvent e) {
+		// NO-OP
+	}
+
+	@Override
+	public void windowClosing(WindowEvent e) {
+		Application.context().getBus().post(new EventAppShutdown());
+	}
+
+	@Override
+	public void windowClosed(WindowEvent e) {
+		// NO-OP
+	}
+
+	@Override
+	public void windowIconified(WindowEvent e) {
+		// NO-OP
+	}
+
+	@Override
+	public void windowDeiconified(WindowEvent e) {
+		// NO-OP
+	}
+
+	@Override
+	public void windowActivated(WindowEvent e) {
+		// NO-OP
+	}
+
+	@Override
+	public void windowDeactivated(WindowEvent e) {
+		// NO-OP
 	}
 }

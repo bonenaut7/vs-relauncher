@@ -42,6 +42,7 @@ public class WindowSystem extends AbstractSystem {
 	
 	@Override
 	public void shutdown() {
+		window.destroy();
 	}
 
 	@Override
@@ -57,15 +58,6 @@ public class WindowSystem extends AbstractSystem {
 	public Window getWindow() {
 		return window;
 	}
-	
-//	public void createNotification(Consumer<Notify> notificationConsumer) {
-//		SwingUtilities.invokeLater(() -> {
-//			notificationConsumer.accept(Notify.Companion.create()
-//				.theme(Theme.Companion.getDefaultDark())
-//				.position(Position.BOTTOM_LEFT)
-//				.attach(window.getFrame()));
-//		});
-//	}
 	
 	public void redrawIf(Function<Window, Boolean> function) {
 		if (window == null) {

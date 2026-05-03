@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 
+import by.bonenaut7.vsrelauncher.events.EventAppShutdown;
 import by.bonenaut7.vsrelauncher.events.EventGameShutdown;
 import by.bonenaut7.vsrelauncher.systems.ArchiveSystem;
 import by.bonenaut7.vsrelauncher.systems.NotificationSystem;
@@ -61,6 +62,7 @@ public class Application {
 		
 		// Start the app
 		ctx.init();
+		ctx.getBus().register(EventAppShutdown.class, e -> context.shutdown());
 		
 		// Wait for game process to appear completely
 		Utils.sleep(2500);
@@ -74,8 +76,6 @@ public class Application {
 			}
 			
 			ctx.getBus().post(new EventGameShutdown());
-			ctx.shutdown();
-			System.exit(0); // Just in case, lol
 		}
 		
 		// NO-OP in case if process is not found.
