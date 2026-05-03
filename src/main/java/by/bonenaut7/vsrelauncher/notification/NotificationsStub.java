@@ -9,8 +9,12 @@ public final class NotificationsStub implements Notifications {
 	}
 
 	@Override
-	public void show(NotificationType type, int expirationTimeMs, String text) {
+	public void show(NotificationType type, String text) {
 		System.out.printf("[%s] %s%s", appTitle, text, System.lineSeparator());
 	}
-
+	
+	@Override
+	public void show(NotificationType type, int expirationTimeMs, String text) {
+		show(type, text);
+	}
 }

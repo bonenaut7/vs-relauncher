@@ -18,6 +18,6 @@ package by.bonenaut7.vsrelauncher.notification;
 public enum NotificationType {
 	PLAIN,
 	INFO,
-	SUCCESS,
-	WARNING
+	WARNING,
+	ERROR
 }

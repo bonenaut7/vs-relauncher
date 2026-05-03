@@ -19,6 +19,8 @@ public interface Notifications {
 	
 	void init(String appTitle);
 	
+	void show(NotificationType type, String text);
+	
 	void show(NotificationType type, int expirationTimeMs, String text);
 	
 }

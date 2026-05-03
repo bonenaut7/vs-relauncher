@@ -22,18 +22,31 @@ import de.mobanisto.toast4j.ToastBuilder;
 import de.mobanisto.toast4j.Toaster;
 import de.mobanisto.wintoast.WinToastTemplate.WinToastTemplateType;
 
-public final class ToastNotifications implements Notifications {
+public final class WinToastNotifications implements Notifications {
 	private Toaster toaster;
 	
 	@Override
 	public void init(String appTitle) {
-		toaster = Toaster.forAumi(appTitle);
+		toaster = Toaster.forAppName(appTitle);
 		toaster.initialize();
+	}
+	
+	@Override
+	public void show(NotificationType type, String text) {
+		show(type, -1, text);
 	}
 	
 	@Override
 	public void show(NotificationType type, int expirationTimeMs, String text) {
 		Application.debug(text);
-		toaster.showToast(new ToastBuilder(WinToastTemplateType.ToastText01).setExpiration(expirationTimeMs).setLine1(text).build());
+		
+		final ToastBuilder builder = new ToastBuilder(WinToastTemplateType.ToastText01);
+		builder.setLine1(text);
+		
+		if (expirationTimeMs > 0) {
+			builder.setExpiration(expirationTimeMs);
+		}
+		
+		toaster.showToast(builder.build());
 	}
 }

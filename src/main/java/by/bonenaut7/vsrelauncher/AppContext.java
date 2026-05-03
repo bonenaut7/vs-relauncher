@@ -22,8 +22,7 @@ import by.bonenaut7.uebus.AbstractEventBus;
 import by.bonenaut7.uebus.SimpleEventBus;
 import by.bonenaut7.vsrelauncher.config.AppConfig;
 import by.bonenaut7.vsrelauncher.notification.Notifications;
-import by.bonenaut7.vsrelauncher.notification.NotificationsStub;
-import by.bonenaut7.vsrelauncher.notification.toast4j.ToastNotifications;
+import by.bonenaut7.vsrelauncher.notification.twoslices.TwoSlicesNotifications;
 import by.bonenaut7.vsrelauncher.systems.AbstractSystem;
 import by.bonenaut7.vsrelauncher.util.Platform;
 
@@ -41,8 +40,8 @@ public final class AppContext {
 	
 	public void init() {
 		notifications = switch (Platform.get()) {
-			case WINDOWS -> new ToastNotifications();
-			default -> new NotificationsStub();
+//			case WINDOWS -> new WinToastNotifications();
+			default -> new TwoSlicesNotifications();
 		};
 		
 		notifications.init(config.getAppTitle());
