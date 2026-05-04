@@ -22,10 +22,8 @@ import by.bonenaut7.uebus.AbstractEventBus;
 import by.bonenaut7.uebus.SimpleEventBus;
 import by.bonenaut7.vsrelauncher.config.AppConfig;
 import by.bonenaut7.vsrelauncher.notification.Notifications;
-import by.bonenaut7.vsrelauncher.notification.toast4j.WinToastNotifications;
 import by.bonenaut7.vsrelauncher.notification.twoslices.TwoSlicesNotifications;
 import by.bonenaut7.vsrelauncher.systems.AbstractSystem;
-import by.bonenaut7.vsrelauncher.util.Platform;
 
 public final class AppContext {
 	private final List<AbstractSystem> activeSystems = new ArrayList<>();
@@ -40,10 +38,7 @@ public final class AppContext {
 	public String language = "en"; // FIXME read that from the config
 	
 	public void init() {
-		notifications = switch (Platform.get()) {
-			case WINDOWS -> new WinToastNotifications();
-			default -> new TwoSlicesNotifications();
-		};
+		notifications = new TwoSlicesNotifications();
 		
 		notifications.init(config.getAppTitle());
 		activeSystems.forEach(s -> s.init());
