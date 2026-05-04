@@ -111,8 +111,12 @@ public final class FileMonitorReader extends AbstractScheduledTask {
 				readBuffer.flip();
 				
 				// Decode
-				// TODO check for decode success
 				final CoderResult result = decoder.decode(readBuffer, charBuffer, false);
+				if (isFailed(result)) {
+					clearBuffers();
+					continue;
+				}
+				
 				charBuffer.flip();
 				
 				// Append stuff we read
@@ -128,9 +132,7 @@ public final class FileMonitorReader extends AbstractScheduledTask {
 					newReadsCallback.accept(line);
 				}
 				
-				// Clear buffers
-				readBuffer.clear();
-				charBuffer.clear();
+				clearBuffers();
 			}
 			
 			channel.close();
@@ -154,8 +156,12 @@ public final class FileMonitorReader extends AbstractScheduledTask {
 			
 			readBuffer.flip();
 			
-			// TODO check for decode success
 			final CoderResult result = decoder.decode(readBuffer, charBuffer, false);
+			if (isFailed(result)) {
+				clearBuffers();
+				continue;
+			}
+			
 			charBuffer.flip();
 			pendingString.append(charBuffer.toString());
 			
@@ -167,10 +173,18 @@ public final class FileMonitorReader extends AbstractScheduledTask {
 				readMessages.add(line);
 			}
 			
-			readBuffer.clear();
-			charBuffer.clear();
+			clearBuffers();
 		}
 		
 		initReadCallback.accept(readMessages);
+	}
+	
+	private boolean isFailed(CoderResult result) {
+		return result.isError(); // || result.isMalformed();
+	}
+	
+	private void clearBuffers() {
+		readBuffer.clear();
+		charBuffer.clear();
 	}
 }
