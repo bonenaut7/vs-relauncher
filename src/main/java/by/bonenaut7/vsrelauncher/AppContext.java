@@ -51,6 +51,7 @@ public final class AppContext {
 	
 	public void shutdown() {
 		activeSystems.forEach(s -> s.shutdown());
+		System.exit(0); // Yeah, it's stupid.
 	}
 	
 	public void addSystem(AbstractSystem system) {
