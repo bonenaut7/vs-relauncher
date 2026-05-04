@@ -27,6 +27,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import by.bonenaut7.vsrelauncher.Application;
+import by.bonenaut7.vsrelauncher.GameState;
 import by.bonenaut7.vsrelauncher.systems.QueueSystem;
 import by.bonenaut7.vsrelauncher.util.ButtonsRow;
 import by.bonenaut7.vsrelauncher.util.Utils;
@@ -107,33 +108,30 @@ public final class ScreenStatus extends ScreenTabs {
 		super.apply(window, width, height);
 		
 		final var ctx = Application.context();
-		final var system = ctx.getSystem(QueueSystem.class);
+		final var qSystem = ctx.getSystem(QueueSystem.class);
 		
-		if (system.getGameState() == QueueSystem.GAME_STATE_IN_QUEUE) {
-			final int queuePosition = system.getQueuePosition();
-			final float queueSpeed = system.getQueueSpeed();
+		if (ctx.getState() == GameState.IN_QUEUE) {
+			final int queuePosition = qSystem.getQueuePosition();
+			final float queueSpeed = qSystem.getQueueSpeed();
 			
-			this.queuePositionText.setText(String.format("Your queue position is: %d", queuePosition));
+			queuePositionText.setText(String.format("Your queue position is: %d", queuePosition));
 			
-			final String stuckMessage = system.isQueueStuck() ? " (Queue stuck?)" : "";
+			final String stuckMessage = qSystem.isQueueStuck() ? " (Queue stuck?)" : "";
 			if (queueSpeed < 0F) {
-				this.queueSpeedText.setText("Speed: Estimating... (less than 0.05/min)" + stuckMessage);
-				this.queueETAText.setText(String.format("ETA: Estimating... (more than %s)%s", Utils.formatTimeMinutes((int)(queuePosition / 0.05f)), stuckMessage));
+				queueSpeedText.setText("Speed: Estimating... (less than 0.05/min)" + stuckMessage);
+				queueETAText.setText(String.format("ETA: Estimating... (more than %s)%s", Utils.formatTimeMinutes((int)(queuePosition / 0.05f)), stuckMessage));
 			} else {
-				this.queueSpeedText.setText(String.format("Speed: %s%s", String.format("%.2f/min", queueSpeed), stuckMessage));
-				this.queueETAText.setText(String.format("ETA: %s%s", Utils.formatTimeMinutes((int)(queuePosition / queueSpeed)), stuckMessage));
+				queueSpeedText.setText(String.format("Speed: %s%s", String.format("%.2f/min", queueSpeed), stuckMessage));
+				queueETAText.setText(String.format("ETA: %s%s", Utils.formatTimeMinutes((int)(queuePosition / queueSpeed)), stuckMessage));
 			}
 			
-			this.queueWaitText.setText(String.format("Waiting for: %s", Utils.formatTimeMinutes(system.getQueueJoinInstant().until(Instant.now(), ChronoUnit.MINUTES))));
+			queueWaitText.setText(String.format("Waiting for: %s", Utils.formatTimeMinutes(qSystem.getQueueJoinInstant().until(Instant.now(), ChronoUnit.MINUTES))));
 			
 			queueSpeedText.setVisible(true);
 			queueETAText.setVisible(true);
 			queueWaitText.setVisible(true);
 		} else {
-			this.queuePositionText.setText(switch (system.getGameState()) {
-				case QueueSystem.GAME_STATE_IN_GAME -> "You're in the game.";
-				default -> "You are not in the queue.";
-			});
+			queuePositionText.setText(ctx.getState() == GameState.IN_GAME ? "You are playing." : "You are not in the queue.");
 			
 			queueSpeedText.setVisible(false);
 			queueETAText.setVisible(false);
