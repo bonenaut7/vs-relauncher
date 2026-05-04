@@ -22,6 +22,7 @@ import javax.swing.SwingUtilities;
 import by.bonenaut7.vsrelauncher.AppContext;
 import by.bonenaut7.vsrelauncher.Application;
 import by.bonenaut7.vsrelauncher.config.AppConfig;
+import by.bonenaut7.vsrelauncher.events.EventGameStateChange;
 import by.bonenaut7.vsrelauncher.gui.Screen;
 import by.bonenaut7.vsrelauncher.gui.ScreenStatus;
 import by.bonenaut7.vsrelauncher.gui.Window;
@@ -38,6 +39,7 @@ public class WindowSystem extends AbstractSystem {
 	@Override
 	public void init() {
 		SwingUtilities.invokeLater(this::startWindow);
+		bus.register(EventGameStateChange.class, this::onStateChange);
 	}
 	
 	@Override
@@ -75,6 +77,20 @@ public class WindowSystem extends AbstractSystem {
 		}
 		
 		SwingUtilities.invokeLater(() -> window.resetScreen());
+	}
+	
+	private void onStateChange(EventGameStateChange event) {
+		if (event.isCancelled()) {
+			return;
+		}
+		
+		if (event.getPreviousState() == event.getNewState()) {
+			return;
+		}
+		
+		if (window.getScreen() instanceof ScreenStatus) {
+			redraw();
+		}
 	}
 	
 	private void startWindow() {

@@ -18,7 +18,10 @@ package by.bonenaut7.vsrelauncher.systems;
 import org.apache.commons.lang3.Strings;
 
 import by.bonenaut7.vsrelauncher.AppContext;
+import by.bonenaut7.vsrelauncher.GameState;
 import by.bonenaut7.vsrelauncher.events.EventChatLogMessage;
+import by.bonenaut7.vsrelauncher.events.EventGameStateChange;
+import by.bonenaut7.vsrelauncher.notification.NotificationType;
 
 public final class NotificationSystem extends AbstractSystem {
 	public NotificationSystem(AppContext ctx) {
@@ -28,6 +31,7 @@ public final class NotificationSystem extends AbstractSystem {
 	@Override
 	public void init() {
 		bus.register(EventChatLogMessage.class, this::onChatMessage);
+		bus.register(EventGameStateChange.class, this::onStateChange);
 	}
 
 	private void onChatMessage(EventChatLogMessage event) {
@@ -39,6 +43,40 @@ public final class NotificationSystem extends AbstractSystem {
 		// Send death notification if possible
 		if (ctx.config.experimental_deathNotifications) {
 			sendDeathNotification(event.getMessage());
+		}
+	}
+	
+	private void onStateChange(EventGameStateChange event) {
+		if (event.isCancelled()) {
+			return;
+		}
+		
+		if (event.getPreviousState() == event.getNewState()) {
+			return;
+		}
+		
+		switch (event.getNewState()) {
+			case IN_MENU:
+				if (event.getPreviousState() == GameState.IN_QUEUE && ctx.config.notify_joinLeaveQueue) {
+					ctx.notifications.show(NotificationType.PLAIN, 15_000, "You've left the queue");
+				}
+				
+				if (event.getPreviousState() == GameState.IN_GAME && ctx.config.notify_joinLeaveGame) {
+					ctx.notifications.show(NotificationType.PLAIN, 30_000, "You've left the game!");
+				}
+				break;
+				
+			case IN_QUEUE:
+				if (ctx.config.notify_joinLeaveGame) {
+					ctx.notifications.show(NotificationType.PLAIN, 15_000, "You've joined the queue!");
+				}
+				break;
+				
+			case IN_GAME:
+				if (ctx.config.notify_joinLeaveGame) {
+					ctx.notifications.show(NotificationType.PLAIN, 30_000, "You've joined the game!");
+				}
+				break;
 		}
 	}
 	

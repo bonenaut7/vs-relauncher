@@ -21,6 +21,7 @@ import java.util.List;
 import by.bonenaut7.uebus.AbstractEventBus;
 import by.bonenaut7.uebus.SimpleEventBus;
 import by.bonenaut7.vsrelauncher.config.AppConfig;
+import by.bonenaut7.vsrelauncher.events.EventGameStateChange;
 import by.bonenaut7.vsrelauncher.notification.Notifications;
 import by.bonenaut7.vsrelauncher.notification.twoslices.TwoSlicesNotifications;
 import by.bonenaut7.vsrelauncher.systems.AbstractSystem;
@@ -36,6 +37,7 @@ public final class AppContext {
 	public ProcessHandle gameProcess;
 	public String username = "undefined";
 	public String language = "en"; // FIXME read that from the config
+	private GameState gameState = GameState.IN_MENU;
 	
 	public void init() {
 		notifications = new TwoSlicesNotifications();
@@ -60,6 +62,21 @@ public final class AppContext {
 	public void updateConfig() {
 		onConfigUpdate();
 		config.save();
+	}
+	
+	public void setState(GameState state) {
+		if (gameState == state) {
+			return;
+		}
+		
+		final EventGameStateChange event = bus.post(new EventGameStateChange(gameState, state));
+		if (!event.isCancelled()) {
+			gameState = event.getNewState();
+		}
+	}
+	
+	public GameState getState() {
+		return gameState;
 	}
 	
 	public <T extends AbstractSystem> T getSystem( Class<T> type) {
