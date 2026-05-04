@@ -10,13 +10,19 @@ public enum Platform {
 	private static final Platform platform;
 	
 	static {
-		platform = switch (System.getProperty("os.name")) {
-			case "Windows" -> WINDOWS;
-			case "FreeBSD" -> FREEBSD;
-			case "Linux", "SunOS", "Unix" -> LINUX;
-			case "Mac OS X", "Darwin" -> MACOSX;
-			default -> UNKNOWN;
-		};
+		final String osName = System.getProperty("os.name");
+		
+        if (osName.startsWith("Windows")) {
+        	platform = WINDOWS;
+        } else if (osName.startsWith("FreeBSD")) {
+        	platform = FREEBSD;
+        } else if (osName.startsWith("Linux") || osName.startsWith("SunOS") || osName.startsWith("Unix")) {
+        	platform = LINUX;
+        } else if (osName.startsWith("Mac OS X") || osName.startsWith("Darwin")) {
+        	platform = MACOSX;
+        } else {
+        	platform = UNKNOWN;
+        }
 	}
 	
 	public static Platform get() {
