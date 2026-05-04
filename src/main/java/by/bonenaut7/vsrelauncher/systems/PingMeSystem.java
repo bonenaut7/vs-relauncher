@@ -55,7 +55,7 @@ public final class PingMeSystem extends AbstractSystem {
 			return;
 		}
 
-		ctx.notifications.show(NotificationType.INFO, 5000, message);
+		ctx.notifications.show(NotificationType.PLAIN, 10_000, message);
 	}
 	
 	private boolean matchString(String str, List<String> keywords) {

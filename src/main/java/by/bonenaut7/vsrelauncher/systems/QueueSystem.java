@@ -123,9 +123,9 @@ public final class QueueSystem extends AbstractSystem {
 	
 	private void onTick() {
 		if (hasPassed(lastQueuePositionUpdate, 30, ChronoUnit.MINUTES)) {
-			ctx.notifications.show(NotificationType.PLAIN, 10000, "Queue is probably dead. Staying in the same place for more than 30 minutes...");
+			ctx.notifications.show(NotificationType.ERROR, 1_800_000, "Queue is probably dead. Staying in the same place for more than 30 minutes...");
 		} else if (isQueueStuck()) {
-			ctx.notifications.show(NotificationType.PLAIN, 10000, "Queue may be dead. Client didn't received any queue updates for more than 10 minutes.");
+			ctx.notifications.show(NotificationType.WARNING, 300_000, "Queue may be dead. Client didn't received any queue updates for more than 10 minutes.");
 		}
 		
 		markScreenDirty();
@@ -157,7 +157,7 @@ public final class QueueSystem extends AbstractSystem {
 		// "13.4.2026 20:13:31 [Notification] Processed server identification"
 		if (line.contains("Processed server identification")) {
 			if (ctx.config.notify_joinLeaveGame) {
-				ctx.notifications.show(NotificationType.PLAIN, 5000, "You've joined the game!");
+				ctx.notifications.show(NotificationType.PLAIN, 30_000, "You've joined the game!");
 			}
 			
 			setQueueState(GAME_STATE_IN_GAME);
@@ -171,13 +171,13 @@ public final class QueueSystem extends AbstractSystem {
 				case GAME_STATE_IN_QUEUE:
 					if (ctx.config.notify_joinLeaveQueue) {
 						// Only when leaving queue manually or being kicked out
-						ctx.notifications.show(NotificationType.PLAIN, 5000, "You've left the queue");
+						ctx.notifications.show(NotificationType.PLAIN, 15_000, "You've left the queue");
 					}
 					break;
 			
 				case GAME_STATE_IN_GAME:
 					if (ctx.config.notify_joinLeaveGame) {
-						ctx.notifications.show(NotificationType.PLAIN, 5000, "You've left the game!");
+						ctx.notifications.show(NotificationType.PLAIN, 30_000, "You've left the game!");
 					}
 					
 					break;
@@ -272,7 +272,7 @@ public final class QueueSystem extends AbstractSystem {
 		if (notifyPositions.length > 0) {
 			for (int idx = 0; idx < notifyPositions.length; idx++) {
 				if (notifyPositions[idx] == position) {
-					ctx.notifications.show(NotificationType.PLAIN, 5000, "Your position in the queue: " + position);
+					ctx.notifications.show(NotificationType.INFO, 30_000, "Your position in the queue: " + position);
 				}
 			}
 		}
