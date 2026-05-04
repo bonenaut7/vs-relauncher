@@ -312,14 +312,6 @@ public final class QueueSystem extends AbstractSystem {
 		this.queueSpeed = this.pastQueuePositions.size() / (float)minutes;
 	}
 	
-	private long durationBetween(Instant first, Instant second, TemporalUnit unit) {
-		return first.isBefore(second) ? first.until(second, unit) : second.until(first, unit);
-	}
-	
-	private boolean hasPassed(Instant instant, long value, TemporalUnit unit) {
-		return instant != null && instant.until(Instant.now(), unit) >= value;
-	}
-	
 	private void markScreenDirty() {
 		windowSystem.redrawIf(w -> w.getScreen() instanceof ScreenStatus);
 	}

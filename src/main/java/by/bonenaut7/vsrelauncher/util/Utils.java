@@ -15,6 +15,8 @@
  */
 package by.bonenaut7.vsrelauncher.util;
 
+import java.time.Instant;
+import java.time.temporal.TemporalUnit;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
@@ -99,6 +101,14 @@ public class Utils {
 		}
 		
 		return str.trim();
+	}
+	
+	public static long durationBetween(Instant first, Instant second, TemporalUnit unit) {
+		return first.isBefore(second) ? first.until(second, unit) : second.until(first, unit);
+	}
+	
+	public static boolean hasPassed(Instant instant, long value, TemporalUnit unit) {
+		return instant != null && instant.until(Instant.now(), unit) >= value;
 	}
 	
 	@FunctionalInterface
