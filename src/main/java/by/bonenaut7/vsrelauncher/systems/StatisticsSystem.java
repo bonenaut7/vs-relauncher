@@ -54,25 +54,8 @@ public final class StatisticsSystem extends AbstractSystem {
 			return;
 		}
 		
-		if (event.getNewState() == GameState.IN_GAME) {
-			timestampGameJoin = Instant.now();
-		}
-		
+		// Apply new state
 		switch (event.getNewState()) {
-			case IN_MENU:
-				switch (event.getPreviousState()) {
-					case IN_QUEUE:
-						addStatisticQueueTime(timestampQueueJoin, Instant.now());
-						timestampQueueJoin = null;
-						break;
-						
-					case IN_GAME:
-						addStatisticPlayTime(timestampGameJoin, Instant.now());
-						timestampGameJoin = null;
-						break;
-				}
-				break;
-
 			case IN_QUEUE:
 				timestampQueueJoin = Instant.now();
 				break;
@@ -80,6 +63,17 @@ public final class StatisticsSystem extends AbstractSystem {
 			case IN_GAME:
 				timestampGameJoin = Instant.now();
 				break;
+		}
+		
+		// Check for statistics
+		if (event.getNewState() != GameState.IN_QUEUE) {
+			addStatisticQueueTime(timestampQueueJoin, Instant.now());
+			timestampQueueJoin = null;
+		}
+		
+		if (event.getNewState() != GameState.IN_GAME) {
+			addStatisticPlayTime(timestampGameJoin, Instant.now());
+			timestampGameJoin = null;
 		}
 	}
 	
