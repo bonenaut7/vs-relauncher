@@ -27,6 +27,7 @@ import by.bonenaut7.vsrelauncher.systems.ArchiveSystem;
 import by.bonenaut7.vsrelauncher.systems.NotificationSystem;
 import by.bonenaut7.vsrelauncher.systems.PingMeSystem;
 import by.bonenaut7.vsrelauncher.systems.QueueSystem;
+import by.bonenaut7.vsrelauncher.systems.StatisticsSystem;
 import by.bonenaut7.vsrelauncher.systems.relauncher.GameFileParserSystem;
 import by.bonenaut7.vsrelauncher.systems.relauncher.LogWatchSystem;
 import by.bonenaut7.vsrelauncher.systems.relauncher.WindowSystem;
@@ -59,6 +60,7 @@ public class Application {
 		ctx.addSystem(new QueueSystem(ctx));
 		ctx.addSystem(new PingMeSystem(ctx));
 		ctx.addSystem(new NotificationSystem(ctx));
+		ctx.addSystem(new StatisticsSystem(ctx));
 		
 		// Start the app
 		ctx.init();
