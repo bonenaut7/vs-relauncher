@@ -67,8 +67,6 @@ public final class QueueSystem extends AbstractSystem {
 		mainLogSub = bus.register(EventMainLogMessage.class, this::onLogEvent);
 		mainLogBulkSub = bus.register(EventMainLogMessagesBulk.class, this::onLogBulkEvent);
 		
-		timestampQueueJoin = null;
-		
 		task.start();
 	}
 	
