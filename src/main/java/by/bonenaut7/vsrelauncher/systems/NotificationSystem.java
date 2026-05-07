@@ -67,7 +67,7 @@ public final class NotificationSystem extends AbstractSystem {
 				break;
 				
 			case IN_QUEUE:
-				if (ctx.config.notify_joinLeaveGame) {
+				if (ctx.config.notify_joinLeaveQueue) {
 					ctx.notifications.show(NotificationType.PLAIN, 15_000, "You've joined the queue!");
 				}
 				break;
