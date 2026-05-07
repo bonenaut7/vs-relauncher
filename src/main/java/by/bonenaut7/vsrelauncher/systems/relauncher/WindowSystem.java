@@ -39,7 +39,7 @@ public class WindowSystem extends AbstractSystem {
 	@Override
 	public void init() {
 		SwingUtilities.invokeLater(this::startWindow);
-		bus.register(EventGameStateChange.class, this::onStateChange);
+		bus.register(EventGameStateChange.class, this::onStateChange, -1);
 	}
 	
 	@Override
